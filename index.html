@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shelby Devnet — Airdrop Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --card: #0d1117;
+    --border: #1e2a38;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --warn: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container { max-width: 680px; margin: 0 auto; padding: 60px 24px 80px; position: relative; z-index: 1; }
+  .header { text-align: center; margin-bottom: 56px; animation: fadeDown 0.6s ease both; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 100px; padding: 6px 16px;
+    font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px;
+  }
+  .badge::before {
+    content: ''; width: 7px; height: 7px; background: var(--accent);
+    border-radius: 50%; box-shadow: 0 0 8px var(--accent); animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  h1 { font-size: clamp(36px, 8vw, 58px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; }
+  h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .tagline { font-size: 15px; color: var(--muted); line-height: 1.6; }
+  .project-band {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px 24px; margin-bottom: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .pill { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+  .pill strong { color: var(--text); font-weight: 700; }
+  .icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .icon.blue { background: rgba(0,212,255,0.1); }
+  .icon.purple { background: rgba(124,58,237,0.15); }
+  .icon.green { background: rgba(34,197,94,0.1); }
+  .icon.amber { background: rgba(245,158,11,0.1); }
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; display: grid; grid-template-columns: 48px 1fr; gap: 20px;
+    align-items: start; transition: border-color 0.2s, transform 0.2s;
+    animation: fadeUp 0.5s ease both;
+  }
+  .step:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-2px); }
+  .step:nth-child(1){animation-delay:0.15s} .step:nth-child(2){animation-delay:0.22s}
+  .step:nth-child(3){animation-delay:0.29s} .step:nth-child(4){animation-delay:0.36s}
+  .step:nth-child(5){animation-delay:0.43s}
+  .step.important { border-color: rgba(0,212,255,0.4); background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(124,58,237,0.04)); }
+  .step-num {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+  }
+  .step.important .step-num { background: linear-gradient(135deg,rgba(0,212,255,0.15),rgba(124,58,237,0.15)); border-color: rgba(0,212,255,0.4); box-shadow: 0 0 20px rgba(0,212,255,0.15); }
+  .step-content h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .hot-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#000; padding:2px 8px; border-radius:100px; font-weight:700; }
+  .step-content p { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+  .step-content p:last-child { margin-bottom: 0; }
+  .link-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent);
+    text-decoration: none; transition: background 0.2s, border-color 0.2s;
+  }
+  .link-chip:hover { background: rgba(0,212,255,0.08); border-color: rgba(0,212,255,0.4); }
+  .file-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .file-tag { font-family:'Space Mono',monospace; font-size:11px; padding:4px 10px; border-radius:6px; border:1px solid var(--border); color:var(--muted); background:rgba(255,255,255,0.02); }
+  .notes { margin-top: 40px; background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.2); border-radius: 16px; padding: 24px; animation: fadeUp 0.5s 0.5s ease both; }
+  .notes h3 { font-size:14px; font-weight:700; color:var(--warn); text-transform:uppercase; letter-spacing:0.1em; font-family:'Space Mono',monospace; margin-bottom:16px; }
+  .note-item { display:flex; gap:12px; align-items:flex-start; margin-bottom:12px; font-size:14px; color:var(--muted); line-height:1.5; }
+  .note-item:last-child { margin-bottom:0; }
+  .note-item::before { content:'→'; color:var(--warn); flex-shrink:0; font-family:'Space Mono',monospace; }
+  .verdict { margin-top:20px; background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(124,58,237,0.05)); border:1px solid rgba(0,212,255,0.2); border-radius:16px; padding:24px; text-align:center; animation:fadeUp 0.5s 0.6s ease both; }
+  .verdict p { font-size:15px; line-height:1.7; color:var(--muted); }
+  .verdict p strong { color:var(--text); }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @media(max-width:480px) { .project-band{grid-template-columns:1fr} .step{grid-template-columns:40px 1fr;gap:14px} .step-num{width:40px;height:40px;font-size:12px} }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="badge">Incentivized Devnet · Airdrop Guide</div>
+    <h1>Shelby<br><span>Devnet Playbook</span></h1>
+    <p class="tagline">Participate early. Don't overthink it. Just execute.</p>
+  </div>
+
+  <div class="project-band">
+    <div class="pill"><div class="icon blue">🏗️</div><div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">BUILT BY</div><strong>Jump Crypto</strong></div></div>
+    <div class="pill"><div class="icon purple">🔷</div><div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">BACKED BY</div><strong>Aptos Labs</strong></div></div>
+    <div class="pill"><div class="icon green">📦</div><div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">TYPE</div><strong>Decentralized Storage</strong></div></div>
+    <div class="pill"><div class="icon amber">⛓️</div><div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">CHAIN</div><strong>Aptos Testnet</strong></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Install Petra Wallet</h3>
+        <p>Download the Petra Wallet Chrome extension. Create a new wallet and <strong>save your seed phrase</strong> somewhere secure — never share it with anyone.</p>
+        <a href="https://petra.app" class="link-chip" target="_blank">↗ petra.app</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Claim Testnet Tokens</h3>
+        <p>You need Aptos testnet tokens to interact on-chain. Use the faucet + CLI tools from the official Shelby docs to get test tokens sent to your Petra wallet.</p>
+        <a href="https://docs.shelby.xyz/tools/cli" class="link-chip" target="_blank">↗ docs.shelby.xyz/tools/cli</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Open Shelby Explorer</h3>
+        <p>Navigate to the Shelby Explorer and connect your Petra wallet to enter the devnet environment.</p>
+        <a href="https://explorer.shelby.xyz/shelbynet" class="link-chip" target="_blank">↗ explorer.shelby.xyz/shelbynet</a>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Link Your Account</h3>
+        <p>Click <strong>"View Account"</strong> in the top-right corner of the explorer. This registers your wallet on Shelby Devnet and ties your address to on-chain activity.</p>
+      </div>
+    </div>
+
+    <div class="step important">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <h3>Upload a File <span class="hot-tag">Most Important</span></h3>
+        <p>Upload files to generate on-chain storage interactions — the core airdrop-worthy action. Try uploading multiple file types for broader coverage.</p>
+        <div class="file-grid">
+          <span class="file-tag">🖼️ Image</span>
+          <span class="file-tag">🎬 Video</span>
+          <span class="file-tag">🎵 Audio</span>
+          <span class="file-tag">📄 PDF / Doc</span>
+          <span class="file-tag">🗜️ ZIP / Code</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>⚡ Important Notes</h3>
+    <div class="note-item">Testnet is starting soon — early activity carries the most weight</div>
+    <div class="note-item">Upload multiple file types if possible to maximize interaction diversity</div>
+    <div class="note-item">Use the same wallet for all actions — consistency matters for snapshot eligibility</div>
+    <div class="note-item">Bookmark both the explorer and docs for quick access</div>
+  </div>
+
+  <div class="verdict">
+    <p>💡 <strong>Storage + Aptos + Jump Crypto</strong> = a strong narrative heading into mainnet.<br>
+    Early testnet participants historically get rewarded. <strong>Don't wait.</strong></p>
+  </div>
+</div>
+</body>
+</html>
