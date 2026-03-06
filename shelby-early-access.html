@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shelby — Decentralized Hot Storage for Web3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050810;
+    --surface: #0b1020;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00f5c4;
+    --accent2: #3d7fff;
+    --accent3: #ff4f6e;
+    --text: #e8edf8;
+    --muted: #4a5570;
+    --glow: rgba(0,245,196,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,196,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,196,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── CANVAS ── */
+  #canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,8,16,0.7);
+    backdrop-filter: blur(20px);
+  }
+
+  nav .inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .nav-links a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 80px;
+    position: relative;
+  }
+
+  .hero-content {
+    max-width: 780px;
+  }
+
+  .hero-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(48px, 8vw, 88px);
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  h1 .highlight {
+    color: var(--accent);
+    position: relative;
+  }
+
+  h1 .line2 {
+    color: var(--muted);
+    display: block;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: #8892aa;
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 14px 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.2);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+
+  .btn-primary:hover::after { transform: translateX(0); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── METRICS ROW ── */
+  .metrics {
+    position: absolute;
+    bottom: 48px;
+    right: 0;
+    display: flex;
+    gap: 1px;
+    animation: fadeUp 0.6s 0.5s ease both;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 28px;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .metric-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+
+  .metric-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── SECTION ── */
+  section {
+    padding: 120px 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 4vw, 52px);
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+
+  .section-desc {
+    font-size: 17px;
+    color: #8892aa;
+    max-width: 520px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* ── USE CASES ── */
+  .use-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 64px;
+  }
+
+  .use-card {
+    background: var(--surface);
+    padding: 40px 36px;
+    position: relative;
+    transition: background 0.3s;
+    overflow: hidden;
+  }
+
+  .use-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .use-card:hover::before { transform: scaleX(1); }
+  .use-card:hover { background: #0d1525; }
+
+  .use-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .use-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .use-desc {
+    font-size: 14px;
+    color: #6a7590;
+    line-height: 1.65;
+  }
+
+  .use-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
+
+  /* ── ARCHITECTURE ── */
+  .arch-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .arch-diagram {
+    position: relative;
+    height: 380px;
+  }
+
+  .arch-node {
+    position: absolute;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .arch-node.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,245,196,0.08);
+  }
+
+  .arch-node.blue {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    box-shadow: 0 0 20px rgba(61,127,255,0.08);
+  }
+
+  .arch-node.red {
+    border-color: var(--accent3);
+    color: var(--accent3);
+  }
+
+  /* node positions */
+  .n1 { top: 20px; left: 50%; transform: translateX(-50%); }
+  .n2 { top: 120px; left: 0; }
+  .n3 { top: 120px; right: 0; }
+  .n4 { top: 240px; left: 20px; }
+  .n5 { top: 240px; left: 50%; transform: translateX(-50%); }
+  .n6 { top: 240px; right: 20px; }
+  .n7 { top: 330px; left: 50%; transform: translateX(-50%); }
+
+  .arch-line {
+    position: absolute;
+    background: var(--border);
+  }
+
+  .arch-features {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .arch-feat {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .arch-feat-icon {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .arch-feat-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .arch-feat-desc {
+    font-size: 14px;
+    color: #6a7590;
+    line-height: 1.6;
+  }
+
+  /* ── STREAM VIZ ── */
+  .stream-section { }
+
+  .stream-wrapper {
+    margin-top: 64px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .stream-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .stream-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .stream-body {
+    padding: 28px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    height: 260px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .log-line {
+    display: flex;
+    gap: 16px;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: logAppear 0.4s ease forwards;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  @keyframes logAppear {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .log-time { color: var(--muted); flex-shrink: 0; }
+  .log-type { flex-shrink: 0; }
+  .log-type.ok { color: var(--accent); }
+  .log-type.push { color: var(--accent2); }
+  .log-type.ai { color: #f59e0b; }
+  .log-type.sync { color: var(--accent3); }
+  .log-msg { color: #8892aa; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── EARLY ACCESS FORM ── */
+  .access-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .access-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .access-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  input, textarea, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a5570' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  select option { background: #0b1020; }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,245,196,0.06);
+  }
+
+  textarea { resize: vertical; min-height: 100px; }
+
+  .checkbox-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 4px;
+  }
+
+  .checkbox-row input[type="checkbox"] {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--accent);
+  }
+
+  .checkbox-row label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+    cursor: pointer;
+  }
+
+  .submit-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 16px 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-btn:hover {
+    background: #00ddb2;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0,245,196,0.25);
+  }
+
+  .submit-btn:active { transform: translateY(0); }
+
+  .access-info {
+    padding-top: 16px;
+  }
+
+  .access-info h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+
+  .access-info p {
+    font-size: 15px;
+    color: #8892aa;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .perk-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .perk-list li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+    color: #8892aa;
+  }
+
+  .perk-list li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  .footer-inner p {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── SUCCESS STATE ── */
+  .success-msg {
+    display: none;
+    background: rgba(0,245,196,0.06);
+    border: 1px solid var(--accent);
+    padding: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    line-height: 1.6;
+  }
+
+  .success-msg.show { display: block; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .use-grid { grid-template-columns: 1fr; }
+    .arch-grid { grid-template-columns: 1fr; }
+    .access-grid { grid-template-columns: 1fr; }
+    .metrics { position: static; margin-top: 48px; flex-wrap: wrap; }
+    .metric-card { flex: 1; min-width: 100px; }
+    .hero { align-items: flex-start; padding-top: 120px; min-height: auto; padding-bottom: 80px; }
+    h1 { font-size: 44px; letter-spacing: -1px; }
+    .nav-links { display: none; }
+    .arch-diagram { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      SHELBY
+    </div>
+    <ul class="nav-links">
+      <li><a href="#use-cases">Use Cases</a></li>
+      <li><a href="#architecture">How It Works</a></li>
+      <li><a href="#access">Early Access</a></li>
+    </ul>
+    <div class="nav-badge">BETA</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-label">Decentralized Hot Storage on Aptos</div>
+      <h1>
+        Realtime data.<br>
+        <span class="line2">Zero compromises.</span>
+      </h1>
+      <p class="hero-sub">
+        Shelby is a decentralized hot storage layer purpose-built for Web3 applications — stream AI-generated content, social feeds, analytics, and media files with sub-second latency. No centralized bottlenecks.
+      </p>
+      <div class="hero-actions">
+        <a href="#access" class="btn-primary">Request Early Access</a>
+        <a href="#use-cases" class="btn-secondary">See Use Cases →</a>
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="metric-card">
+        <span class="metric-value">&lt;50</span>
+        <span class="metric-label">ms Latency</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-value">∞</span>
+        <span class="metric-label">Scalable</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-value">0</span>
+        <span class="metric-label">Central Points</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- USE CASES -->
+<section id="use-cases">
+  <div class="container">
+    <div class="section-label">Use Cases</div>
+    <h2>Built for the<br>realtime Web3 stack</h2>
+    <p class="section-desc">From AI agents to on-chain social — any workload that demands speed and decentralization.</p>
+
+    <div class="use-grid fade-in">
+
+      <div class="use-card">
+        <span class="use-icon">🤖</span>
+        <div class="use-title">AI Agent Outputs</div>
+        <p class="use-desc">Push images, audio, datasets, and inference results from AI agents directly into Shelby nodes. Serve outputs instantly to dapps with no cloud dependency.</p>
+        <span class="use-tag">Images · Audio · Embeddings</span>
+      </div>
+
+      <div class="use-card">
+        <span class="use-icon">📡</span>
+        <div class="use-title">Social & Content Feeds</div>
+        <p class="use-desc">Store and stream posts, reactions, and media from on-chain social applications. Real-time fan-out across Shelby's storage mesh ensures feeds never lag.</p>
+        <span class="use-tag">Posts · Media · Metadata</span>
+      </div>
+
+      <div class="use-card">
+        <span class="use-icon">📊</span>
+        <div class="use-title">Analytics Dashboards</div>
+        <p class="use-desc">Write time-series analytics, chain events, and metrics to Shelby and serve them as live streams to dashboard frontends — no centralized data warehouse required.</p>
+        <span class="use-tag">Metrics · Events · Logs</span>
+      </div>
+
+      <div class="use-card">
+        <span class="use-icon">🎞️</span>
+        <div class="use-title">Media Streaming</div>
+        <p class="use-desc">Upload video, image, and audio assets and distribute them globally via Shelby's geo-distributed nodes. Low-latency CDN behaviour — without the CDN company.</p>
+        <span class="use-tag">Video · Images · Audio</span>
+      </div>
+
+      <div class="use-card">
+        <span class="use-icon">🔗</span>
+        <div class="use-title">On-chain Data Bridging</div>
+        <p class="use-desc">Mirror Aptos on-chain state and transaction logs into Shelby for instant off-chain querying. Keep your dapp reactive to chain state without polling RPC nodes.</p>
+        <span class="use-tag">Aptos · Move · Events</span>
+      </div>
+
+      <div class="use-card">
+        <span class="use-icon">📁</span>
+        <div class="use-title">Application Logs & Traces</div>
+        <p class="use-desc">Push application logs, traces, and debug outputs from your Web3 backend into Shelby. Access them in real time without depending on centralized observability platforms.</p>
+        <span class="use-tag">Logs · Traces · Debug</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ARCHITECTURE -->
+<section id="architecture" class="arch-section">
+  <div class="container">
+    <div class="arch-grid">
+      <div class="arch-diagram fade-in">
+        <!-- SVG diagram -->
+        <svg width="100%" height="380" viewBox="0 0 420 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Connecting lines -->
+          <line x1="210" y1="54" x2="90" y2="130" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="210" y1="54" x2="330" y2="130" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="90" y1="160" x2="70" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="90" y1="160" x2="210" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="330" y1="160" x2="210" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="330" y1="160" x2="350" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+          <line x1="210" y1="272" x2="210" y2="320" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+          <!-- Glowing lines -->
+          <line x1="210" y1="54" x2="90" y2="130" stroke="rgba(0,245,196,0.3)" stroke-width="1" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1s" repeatCount="indefinite"/>
+          </line>
+          <line x1="210" y1="54" x2="330" y2="130" stroke="rgba(61,127,255,0.3)" stroke-width="1" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.3s" repeatCount="indefinite"/>
+          </line>
+          <line x1="90" y1="160" x2="70" y2="240" stroke="rgba(0,245,196,0.2)" stroke-width="1" stroke-dasharray="3 5">
+            <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="0.9s" repeatCount="indefinite"/>
+          </line>
+          <line x1="330" y1="160" x2="350" y2="240" stroke="rgba(61,127,255,0.2)" stroke-width="1" stroke-dasharray="3 5">
+            <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.1s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- Nodes -->
+          <!-- Aptos Chain -->
+          <rect x="148" y="16" width="124" height="36" rx="0" fill="#0b1020" stroke="rgba(0,245,196,0.5)" stroke-width="1"/>
+          <text x="210" y="38" text-anchor="middle" font-family="Space Mono, monospace" font-size="11" fill="#00f5c4">APTOS CHAIN</text>
+
+          <!-- Shelby Push API -->
+          <rect x="30" y="122" width="120" height="36" rx="0" fill="#0b1020" stroke="rgba(0,245,196,0.3)" stroke-width="1"/>
+          <text x="90" y="144" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" fill="#00f5c4">SHELBY PUSH API</text>
+
+          <!-- Shelby Stream API -->
+          <rect x="270" y="122" width="120" height="36" rx="0" fill="#0b1020" stroke="rgba(61,127,255,0.4)" stroke-width="1"/>
+          <text x="330" y="144" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" fill="#3d7fff">SHELBY STREAM</text>
+
+          <!-- Storage Nodes -->
+          <rect x="20" y="240" width="100" height="32" rx="0" fill="#0b1020" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <text x="70" y="260" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" fill="#4a5570">NODE / US-EAST</text>
+
+          <rect x="150" y="240" width="120" height="32" rx="0" fill="#0b1020" stroke="rgba(0,245,196,0.2)" stroke-width="1"/>
+          <text x="210" y="260" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" fill="#4a5570">NODE / EU-WEST</text>
+
+          <rect x="300" y="240" width="100" height="32" rx="0" fill="#0b1020" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <text x="350" y="260" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" fill="#4a5570">NODE / AP-EAST</text>
+
+          <!-- Dapp Frontend -->
+          <rect x="150" y="320" width="120" height="36" rx="0" fill="#0b1020" stroke="rgba(255,79,110,0.4)" stroke-width="1"/>
+          <text x="210" y="342" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" fill="#ff4f6e">DAPP FRONTEND</text>
+
+          <!-- Animated data dots -->
+          <circle r="3" fill="#00f5c4">
+            <animateMotion dur="2s" repeatCount="indefinite" path="M210,54 L90,130"/>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle r="3" fill="#3d7fff">
+            <animateMotion dur="2.5s" repeatCount="indefinite" path="M330,130 L210,240"/>
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle r="3" fill="#00f5c4">
+            <animateMotion dur="1.8s" repeatCount="indefinite" path="M210,272 L210,320"/>
+            <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+
+      <div class="arch-features fade-in">
+        <div class="section-label">Architecture</div>
+        <h2>How Shelby<br>serves data</h2>
+
+        <div class="arch-feat">
+          <div class="arch-feat-icon">⚡</div>
+          <div>
+            <div class="arch-feat-title">Hot Write Path</div>
+            <p class="arch-feat-desc">Builders push data — AI outputs, logs, posts, media — directly to Shelby's write API. Data is immediately available for streaming, no propagation delay.</p>
+          </div>
+        </div>
+
+        <div class="arch-feat">
+          <div class="arch-feat-icon">🌐</div>
+          <div>
+            <div class="arch-feat-title">Geo-distributed Nodes</div>
+            <p class="arch-feat-desc">Shelby replicates data across geo-distributed storage nodes. Reads are served from the closest node, delivering CDN-like performance without centralization.</p>
+          </div>
+        </div>
+
+        <div class="arch-feat">
+          <div class="arch-feat-icon">🔄</div>
+          <div>
+            <div class="arch-feat-title">Live Stream API</div>
+            <p class="arch-feat-desc">Frontend apps subscribe to data streams via Shelby's stream API. New writes propagate instantly to active subscribers — no polling, no websocket servers to manage.</p>
+          </div>
+        </div>
+
+        <div class="arch-feat">
+          <div class="arch-feat-icon">🔗</div>
+          <div>
+            <div class="arch-feat-title">Aptos-native</div>
+            <p class="arch-feat-desc">Shelby is designed around the Aptos ecosystem. On-chain events and Move contract state can be mirrored into Shelby for instant off-chain access.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STREAM VIZ -->
+<section class="stream-section">
+  <div class="container">
+    <div class="section-label">Live Data Stream</div>
+    <h2>Watch it in motion</h2>
+    <p class="section-desc">A live simulation of Shelby handling real-world Web3 and AI workloads across nodes.</p>
+
+    <div class="stream-wrapper fade-in">
+      <div class="stream-header">
+        <div class="stream-dot dot-r"></div>
+        <div class="stream-dot dot-y"></div>
+        <div class="stream-dot dot-g"></div>
+        <span style="margin-left:8px;">shelby — live node stream</span>
+        <span style="margin-left:auto; color: #00f5c4;">● LIVE</span>
+      </div>
+      <div class="stream-body" id="logStream">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EARLY ACCESS FORM -->
+<section id="access" class="access-section">
+  <div class="container">
+    <div class="access-grid">
+      <div class="access-info fade-in">
+        <div class="section-label">Early Access</div>
+        <h2>Join the<br>beta program</h2>
+        <p>We're onboarding a limited set of builders to test Shelby's file upload throughput, streaming performance, and cross-region data serving on Aptos.</p>
+        <p>Apply to get direct access to the team, early API credentials, and influence how Shelby is built.</p>
+        <ul class="perk-list">
+          <li>Direct API access and credentials to start building immediately</li>
+          <li>Test file upload throughput and streaming under real workloads</li>
+          <li>Cross-region performance benchmarking across Shelby nodes</li>
+          <li>Build demo dapps on Aptos with full team support</li>
+          <li>Shape the product roadmap — your feedback drives what ships next</li>
+          <li>Early access to the AI agent storage layer as it matures</li>
+        </ul>
+      </div>
+
+      <div class="fade-in">
+        <form class="access-form" id="earlyAccessForm">
+
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="Satoshi Nakamoto" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="you@project.xyz" required>
+          </div>
+
+          <div class="form-group">
+            <label for="project">Project / Team</label>
+            <input type="text" id="project" placeholder="Your dapp or company name">
+          </div>
+
+          <div class="form-group">
+            <label for="usecase">Primary Use Case</label>
+            <select id="usecase">
+              <option value="">Select a use case</option>
+              <option value="ai-agent">AI Agent Storage & Distribution</option>
+              <option value="social">On-chain Social / Content Feeds</option>
+              <option value="analytics">Analytics Dashboard</option>
+              <option value="media">Media / File Streaming</option>
+              <option value="logs">Application Logs & Traces</option>
+              <option value="other">Other / Multiple</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="details">What are you building? (Optional)</label>
+            <textarea id="details" placeholder="Describe your project and how you plan to use Shelby..."></textarea>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="updates">
+            <label for="updates">Keep me updated on Shelby's roadmap and new features</label>
+          </div>
+
+          <button type="submit" class="submit-btn">Apply for Early Access →</button>
+
+        </form>
+
+        <div class="success-msg" id="successMsg">
+          ✓ APPLICATION RECEIVED<br><br>
+          Thanks for applying. We review requests in batches and will reach out within a few business days with your API credentials and onboarding details.<br><br>
+          In the meantime, follow our progress on Twitter / X.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <p>© 2025 Shelby Protocol. Built on Aptos.</p>
+    <ul class="footer-links">
+      <li><a href="#">Twitter</a></li>
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">Docs</a></li>
+      <li><a href="#">Discord</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+// ── PARTICLE CANVAS ──
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.alpha = Math.random() * 0.4 + 0.1;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.color = Math.random() > 0.7 ? '#00f5c4' : Math.random() > 0.5 ? '#3d7fff' : '#ffffff';
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function drawConnections() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 140) {
+        ctx.save();
+        ctx.globalAlpha = (1 - d/140) * 0.07;
+        ctx.strokeStyle = '#00f5c4';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+}
+
+function animCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawConnections();
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animCanvas);
+}
+animCanvas();
+
+// ── LOG STREAM ──
+const logs = [
+  { type: 'PUSH', cls: 'push', msg: 'image/ai-output-0x4f2c.png → node:us-east-1 (1.2 MB, 34ms)' },
+  { type: 'STREAM', cls: 'ok', msg: 'subscriber:0xAF91 ← social-feed stream opened' },
+  { type: 'AI', cls: 'ai', msg: 'agent:embeddings → stored dataset_batch_0019 (204kb)' },
+  { type: 'PUSH', cls: 'push', msg: 'log/trace-0x3e8b.json → node:eu-west-2 (12kb, 18ms)' },
+  { type: 'SYNC', cls: 'sync', msg: 'aptos:block#8842901 → mirrored to shelby index' },
+  { type: 'STREAM', cls: 'ok', msg: 'subscriber:0xDB22 ← analytics-dashboard stream OK' },
+  { type: 'PUSH', cls: 'push', msg: 'audio/voice-gen-042.mp3 → node:ap-east-1 (3.8 MB, 51ms)' },
+  { type: 'AI', cls: 'ai', msg: 'agent:diffusion → image/gen_0041.webp stored (876kb)' },
+  { type: 'SYNC', cls: 'sync', msg: 'aptos:event CoinStore::WithdrawEvent → indexed' },
+  { type: 'PUSH', cls: 'push', msg: 'metadata/post-0x7723.json → node:us-west-2 (4kb, 9ms)' },
+  { type: 'STREAM', cls: 'ok', msg: 'cross-region replication: eu-west-2 → ap-east-1 OK' },
+  { type: 'AI', cls: 'ai', msg: 'agent:llm-summary → stored text/report_0012.txt (22kb)' },
+  { type: 'PUSH', cls: 'push', msg: 'video/highlight-reel-09.mp4 → node:us-east-1 (18 MB, 122ms)' },
+  { type: 'SYNC', cls: 'sync', msg: 'aptos:block#8842902 → mirrored to shelby index' },
+  { type: 'STREAM', cls: 'ok', msg: 'subscriber:0x1C04 ← media-stream latency 23ms ✓' },
+];
+
+const stream = document.getElementById('logStream');
+let logIndex = 0;
+
+function addLog() {
+  const l = logs[logIndex % logs.length];
+  logIndex++;
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.style.animationDelay = '0ms';
+  line.innerHTML = `<span class="log-time">${time}</span><span class="log-type ${l.cls}">[${l.type}]</span><span class="log-msg">${l.msg}</span>`;
+  stream.appendChild(line);
+  if (stream.children.length > 10) stream.removeChild(stream.firstChild);
+}
+
+for (let i = 0; i < 6; i++) addLog();
+setInterval(addLog, 1400);
+
+// ── SCROLL REVEAL ──
+const fadeEls = document.querySelectorAll('.fade-in');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+fadeEls.forEach(el => obs.observe(el));
+
+// ── FORM SUBMIT ──
+document.getElementById('earlyAccessForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  this.style.display = 'none';
+  document.getElementById('successMsg').classList.add('show');
+});
+</script>
+</body>
+</html>
